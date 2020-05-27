@@ -1,0 +1,23 @@
+$main-width: 1400px;
+$card-shadow:2px 2px 5px rgba(0,0,0,0.2);
+@mixin box {
+    border-radius: 7px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255,0.45);
+}
+$card-width: 500px;
+$card-height: $card-width * 0.8;
+$card-title-size: $card-width * 0.08;
+.title {
+    color: #1d1c44;
+    text-align: center;
+    display: block;
+    font-size: $card-title-size;
+    font-weight: bold;
+}
+.container {
+    margin-top: 2vh;
+    width: 85%;
+    // height: 50vh;
+    @include box;
+}
