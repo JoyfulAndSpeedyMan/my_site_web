@@ -26,12 +26,47 @@ export default {
         spits: res.data.items
       };
     }
+  }, 
+  mounted() {
+    var _self = this;
+    window.addEventListener("scroll", function(e) {
+      let sy = window.scrollY;
+      let sh = document.documentElement.scrollHeight;
+      let ch = document.documentElement.clientHeight;
+      // console.log(
+      //   `scrollY = ${sy} , scrollHeight = ${sh}, clientHeight = ${ch}`
+      // );
+      // console.log(
+      //   `------ scrollHeight-clientHeight = ${sh -ch}`
+      // );
+      if (sy == sh - ch && _self.loading && !_self.noMore) {
+        window.scrollBy(0, -500);
+      }
+      if (sy >= sh - ch - 300) {
+        // console.log(`mounted------ loading:${_self.loading} , noMore:${_self.noMore}`);
+        if (!_self.loading && !_self.noMore) {
+          // console.log(`mounted2------ loading:${_self.loading} , noMore:${_self.noMore}`);
+          _self.loading = true;
+          _self.loadMore();
+        }
+      }
+    });
   },
   methods: {
-    async loadMore() {
-      let res = await spitApi.getSpit(1, 5);
-      if (res.code == 15000) {
-          this.spits=this.spits.concat(res.data.items);
+  async loadMore() {
+      // console.log(
+      //   `loadMore------ loading:${this.loading} , noMore:${this.noMore}`
+      // );
+      let res = await spitApi.getSpit(this.page, this.pageSize);
+      if (res) {
+        this.loading = false;
+        if (res.data.size == 0) {
+          this.noMore = true;
+          console.log('嘿嘿')
+          return;
+        }
+        this.spits = this.spits.concat(res.data.items);
+        this.page++;
       }
     }
   },
@@ -96,13 +131,20 @@ export default {
           tag: ["视频网站", "不好用", "太卡"],
           createTime: "1991-11-02"
         }
-      ]
+      ],
+      //无限滚动变量
+      page: 2,
+      pageSize: 5,
+      load: false,
+      noMore: false,
+      loading: false
     };
   },
   components: {
     Card
   }
 };
+
 </script>
 <style scoped lang="scss">
 @import "~/assets/css/common";
@@ -138,6 +180,7 @@ $min-height: 50vh;
 }
 .cont {
   color: #212121;
-  font-size: 1.2em;
+  font-size: 1em;
+  text-indent: 1em;
 }
 </style>

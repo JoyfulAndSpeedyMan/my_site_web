@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-timeline style="margin-top:20px">
+    <el-timeline style="margin-top:20px;" >
       <el-timeline-item
         v-for="msg in messages"
         :key="msg.id"
@@ -82,6 +82,8 @@ export default {
           level: 1
         }
       ],
+
+      //无限滚动变量
       page: 2,
       pageSize: 5,
       load: false,
@@ -123,6 +125,8 @@ export default {
   color: #132519;
   font-size: 1.9em;
   font-weight: bold;
+
+
 }
 .t2 {
   color: #822f2f;
