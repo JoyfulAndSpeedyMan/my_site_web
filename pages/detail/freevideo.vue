@@ -36,16 +36,16 @@
       <el-table-column prop="kind" label="分类" sortable></el-table-column>
       <el-table-column prop="detail" label="描述" sortable></el-table-column>
       <el-table-column prop="status" label="状态" sortable width="100" :formatter="formatter"></el-table-column>
-      <el-table-column prop="thumb" label="点赞" sortable width="100">
+      <el-table-column prop="thumbs" label="点赞" sortable width="100">
         <template slot-scope="scope" class="tag">
           <div @click="thumb(scope.$index)" style="cursor: pointer;">
             <i
               class="el-icon-s-opportunity"
-              style="font-size:1.5em;color:rgb(228, 228, 47);"
+              style="font-size:1.5em;color:#409EFF;"
               v-if="scope.row.isThumb"
             ></i>
             <i class="el-icon-s-opportunity" style="font-size:1.5em;color:rgb(95, 95, 80)" v-else></i>
-            {{scope.row.thumb}}
+            {{scope.row.thumbs}}
           </div>
         </template>
       </el-table-column>
@@ -103,6 +103,7 @@ export default {
   async asyncData() {
     let result = {};
     let res = await freevideoApi.getList(1, 10);
+    console.log(res);
     if (res.data.size == 0) {
       result.noMore = true;
       Message({
@@ -152,15 +153,24 @@ export default {
         form: {},
         kinds: [],
         rules: {
-          name:[
-            { required: true, message: '网站名称不能为空', trigger: 'blur'},
-            { min: 1, max: 20, message: '长度不能大于15个字符', trigger: ['change','blur'] }
-            ],
-          url:[
-            { required: true, message: '网址是必须的', trigger: 'blur'},
-            {pattern: /((https?):\/\/)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$/, message: '请输入正确的网址',trigger: ['change','blur']}
+          name: [
+            { required: true, message: "网站名称不能为空", trigger: "blur" },
+            {
+              min: 1,
+              max: 20,
+              message: "长度不能大于15个字符",
+              trigger: ["change", "blur"]
+            }
           ],
-          kind:[  { required: true, message: '请选择分类', trigger: 'blur'},],
+          url: [
+            { required: true, message: "网址是必须的", trigger: "blur" },
+            {
+              pattern: /((https?):\/\/)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$/,
+              message: "请输入正确的网址",
+              trigger: ["change", "blur"]
+            }
+          ],
+          kind: [{ required: true, message: "请选择分类", trigger: "blur" }]
         }
       }
     };
@@ -188,7 +198,7 @@ export default {
         if (!this.tableData[index].isThumb) {
           let res = await freevideoApi.thumb(id);
           if (res.code == 15000) {
-            this.tableData[index].thumb++;
+            this.tableData[index].thumbs++;
             this.tableData[index].isThumb = true;
           }
         }
@@ -196,7 +206,7 @@ export default {
         else {
           let res = await freevideoApi.unthumb(id);
           if (res.code == 15000) {
-            this.tableData[index].thumb--;
+            this.tableData[index].thumbs--;
             this.tableData[index].isThumb = false;
           }
         }
@@ -215,6 +225,7 @@ export default {
       this.loading = true;
       this.noMore = false;
       let res = await freevideoApi.getList(1, this.size);
+      console.log(res);
       if (res) {
         this.loading = false;
 
@@ -258,7 +269,7 @@ export default {
       }
     },
     shareClick() {
-      this.$refs['shareForm'].validate(valid => {
+      this.$refs["shareForm"].validate(valid => {
         if (valid) {
           this.shareCommit();
         }
@@ -267,14 +278,13 @@ export default {
     async shareCommit() {
       let res = await freevideoApi.shareCommit(this.share.form);
       if (res.code == 15000) {
-         this.share.dialogVisible = false;
+        this.share.dialogVisible = false;
         this.share.form = {};
         this.$message({
           type: "success",
           message: res.message
         });
       }
-     
     },
     feedback() {}
   }
@@ -339,8 +349,8 @@ $base-size: 1vw;
   justify-content: space-around;
 }
 .con-video {
-    width: $main-width;
-    // margin: 0 auto;
-    margin-top: 2vh;
-  }
+  width: $main-width;
+  // margin: 0 auto;
+  margin-top: 2vh;
+}
 </style>

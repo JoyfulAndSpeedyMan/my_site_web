@@ -1,6 +1,6 @@
 <template>
     <footer>
-        ICP证：<nuxt-link to="http://www.beian.miit.gov.cn">鲁ICP备19055609号</nuxt-link>
+        ICP证：<nuxt-link to="http://www.beian.miit.gov.cn" style="color:rgb(95, 95, 80)">鲁ICP备19055609号</nuxt-link>
     </footer>
 </template>
 <script>
@@ -15,6 +15,8 @@ footer{
     position: fixed;
     bottom: 1vh;
     width: 100%;
+    // margin-top: 3vh;
     text-align: center;
+    color: rgb(95, 95, 80);
 }
 </style>

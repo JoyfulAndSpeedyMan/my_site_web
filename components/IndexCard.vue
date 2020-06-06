@@ -60,6 +60,11 @@ export default {
   display: inline-block;
   background: rgba(255, 255, 255, 0.5) no-repeat 50% 1vh;
   border-radius: 5px;
+  transition: transform linear 100ms 0ms;
+  &:hover{
+    transform: translateY(-5px);
+
+  }
 }
 
 .title-p {

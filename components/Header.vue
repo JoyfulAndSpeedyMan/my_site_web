@@ -17,10 +17,6 @@ export default {
     return {
       navData: [
         {
-          to: "/api",
-          text: "API"
-        },
-        {
           to: "/detail",
           text: "详情"
         },

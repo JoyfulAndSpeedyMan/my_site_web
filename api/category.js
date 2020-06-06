@@ -1,9 +1,9 @@
 import request from '@/utils/request'
-const base="/category"
+const base="/base"
 export default {
     getGategories(){
         return request({
-            url:`${base}`,
+            url:`${base}/category`,
             method:"get"
         })
     }

@@ -3,20 +3,26 @@ import auth from "~/utils/auth";
 // import auth from '@/utils/auth'
 import { Message, MessageBox } from 'element-ui'
 const request = axios.create({
-    baseURL: "http://www.pin90.top:7300/mock/5ec506d7f34d0c0945a128b8",
-    timeout: 3000
+    baseURL: "http://www.pin90.top:7300/mock/5ed74e35c187072cf4162c55",
+    // baseURL: "http://localhost:8080",
+    // baseURL: "http://data.pin90.top:10000",
+    timeout: 3000,
+    headers:{
+        "content-Type": "application/x-www-form-urlencoded"
+    }
 })
 // request拦截器
 request.interceptors.request.use(config => {
-    if (auth.getToken()) {
-        config.headers['X-User-Token'] = auth.getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+    let token=auth.getToken();
+    if (token) {
+        config.headers['X-User-Token'] = token // 让每个请求携带自定义token 请根据实际情况自行修改
     }
-    console.log(config.url + ' 请求成功');
+    console.log(`${config.method}   ${config.url}   请求成功`);
     return config
 }, error => {
     // Do something with request error
     console.log(error) // for debug
-    console.log(config.url + '请求失败');
+    console.log(`${config.method}   ${config.url}   请求失败`);
     Promise.reject(error)
 })
 
@@ -28,13 +34,13 @@ request.interceptors.response.use(
         */
         const res = response.data
         if (res.code !== 15000) {
-            console.log(response.config.url + ' 响应状态码错误');
+            console.log(`${response.config.method}   ${response.config.url}   响应状态码错误`);
             Message({
                 message: res.message,
                 type: 'error',
             })
         } else {
-            console.log(response.config.url + ' 响应状态码成功');
+            console.log(`${response.config.method}   ${response.config.url}   响应状态码成功`);
         }
         return res;
     },

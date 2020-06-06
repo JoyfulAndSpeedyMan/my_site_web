@@ -13,7 +13,7 @@
           <el-input placeholder="请输入用户名/邮箱/手机号" v-model="user.username"></el-input>
         </el-form-item>
         <el-form-item label="密码" class="input" prop="password">
-          <el-input placeholder="请输入用户名/邮箱/手机号" show-password v-model="user.password"></el-input>
+          <el-input placeholder="请输入密码" show-password v-model="user.password"></el-input>
         </el-form-item>
         <div class="buttons">
           <el-button type="primary" @click="register">注册</el-button>
@@ -47,7 +47,9 @@ export default {
     };
   },
   methods: {
-    register() {},
+    register() {
+      this.$router.push("/user/register")
+    },
     loginClick(formname) {
       this.$refs[formname].validate(valid => {
         if (valid) {
@@ -62,7 +64,6 @@ export default {
     },
     async login() {
       let res = await userApi.login(this.user);
-
       if (res.data.token) {
         let user = auth.getUserInfoAndSaveToken(res.data.token);
         let backUrl=this.$route.query.back;
@@ -76,7 +77,7 @@ export default {
         else
           this.$router.replace('/');
         this.$message({
-          message: `欢迎回来,${user.sub}`,
+          message: `欢迎回来`,
           type: "success"
         });
       }
