@@ -9,28 +9,21 @@
         ref="ruleForm"
         status-icon
       >
-        <el-form-item label="用户名" class="input" prop="username">
-          <el-input placeholder="请输入登陆使用的用户名" v-model="user.username"></el-input>
+        <el-form-item label="手机号" maxlength="11" class="input" prop="phone">
+          <el-input placeholder="手机号" v-model="user.phone"></el-input>
         </el-form-item>
+
         <el-form-item label="密码" class="input" prop="password">
           <el-input placeholder="请输入密码" show-password v-model="user.password"></el-input>
         </el-form-item>
-        <el-form-item
-          label="手机号"
-          maxlength="11"
-          class="input"
-          prop="phone"
-        >
-          <el-input placeholder="手机号" v-model="user.phone" ></el-input>
+
+        <el-form-item label="确认密码" class="input" prop="repPassword">
+          <el-input placeholder="请输入密码" show-password v-model="user.repPassword"></el-input>
         </el-form-item>
-        <el-form-item
-          label="验证码"
-          
-          class="input"
-          prop="code"
-        >
+
+        <el-form-item label="验证码" class="input" prop="code">
           <div class="code">
-            <el-input  v-model="user.code" maxlength="6" style="display:inline-block"></el-input>
+            <el-input v-model="user.code" maxlength="6" style="display:inline-block"></el-input>
             <el-button
               style="margin-left:10px"
               @click="sendMsg"
@@ -39,7 +32,7 @@
           </div>
         </el-form-item>
         <div class="buttons">
-          <el-button type="primary" @click="registerClick">注册</el-button>
+          <el-button type="primary" @click="registerClick" :loading="loading">{{loading?"加载中":"注册"}}</el-button>
         </div>
       </el-form>
     </div>
@@ -51,30 +44,36 @@ import userApi from "~/api/user";
 import auth from "~/utils/auth";
 export default {
   data() {
+    var validatePass = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请输入密码"));
+      } else {
+        if (this.user.repPassword !== "") {
+          this.$refs.ruleForm.validateField("repPassword");
+        }
+        callback();
+      }
+    };
+    var validatePass2 = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请再次输入密码"));
+      } else if (value !== this.user.password) {
+        callback(new Error("两次输入密码不一致!"));
+      } else {
+        callback();
+      }
+    };
     return {
       user: {
-        username: "",
-        password: "",
         phone: "",
+        password: "",
+        repPassword: "",
         code: ""
       },
+      loading:false,
       sendCodeText: "发送",
       sendButtonStatus: false,
       rules: {
-        username: [
-          {
-            required: true,
-            message: "用户名不能为空",
-            trigger: ["blur", "change"]
-          }
-        ],
-        password: [
-          {
-            required: true,
-            message: "密码不能为空",
-            trigger: ["blur", "change"]
-          }
-        ],
         phone: [
           {
             required: true,
@@ -87,6 +86,8 @@ export default {
             trigger: ["change", "blur"]
           }
         ],
+        password: [{ validator: validatePass, trigger: "blur" }],
+        repPassword: [{ validator: validatePass2, trigger: "change" }],
         code: [
           {
             required: true,
@@ -100,25 +101,29 @@ export default {
   },
   methods: {
     registerClick() {
-       this.$refs['ruleForm'].validate(vaild=>{
-         if(vaild){
+      this.$refs["ruleForm"].validate(vaild => {
+        if (vaild) {
           this.register();
-         }else {
+        } else {
           this.$message({
             message: "请填入必要信息",
             type: "error"
           });
         }
-       })
+      });
     },
-    async register(){
-      let res=await userApi.register(this.user);
-      if(res.code==15000){
+    async register() {
+      this.loading=true;
+      let u=this.user;
+      let res = await userApi.register(u.phone,u.password,u.code);
+      if (res.code == 15000) {
+  
         this.$message({
-            message: "注册成功",
-            type:"success"
-          });
+          message: "注册成功",
+          type: "success"
+        });
       }
+      this.loading=false;
     },
     async sendMsg() {
       let phone = this.user.phone;
@@ -154,23 +159,6 @@ export default {
           type: "warning",
           message: "请输入正确的手机号码"
         });
-      }
-    },
-    numberChange(val, index) {
-      let integer = /^(-|\+)?\d+$/; //输入整数(包括0)的正则，解决不能输入负号问题
-      if (integer.test(val)) {
-        if (this.tableData[index].thirdScore == 0) {
-          this.tableData[index].getDetailScore = parseInt(val);
-        } else {
-          this.tableData[index].getDetailScore = parseInt(val);
-          this.$nextTick(() => {
-            let newVal = Math.min(
-              parseInt(val),
-              this.tableData[index].thirdScore
-            );
-            this.tableData[index].getDetailScore = newVal;
-          });
-        }
       }
     }
   }

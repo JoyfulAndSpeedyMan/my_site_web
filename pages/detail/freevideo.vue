@@ -4,7 +4,7 @@
     <div class="tool-bar">
       <el-button type="primary" icon="el-icon-refresh" @click.native="refresh">刷新网站列表</el-button>
       <el-button type="success" icon="el-icon-share" @click.native="shareOpen">分享我知道的小网站</el-button>
-      <el-button type="info" icon="el-icon-mouse" @click.native="feedback">吐槽</el-button>
+      <!-- <el-button type="info" icon="el-icon-mouse" @click.native="spit">吐槽</el-button> -->
     </div>
 
     <el-table
@@ -69,12 +69,7 @@
         </el-form-item>
         <el-form-item label="分类" class="input" prop="kind">
           <el-select v-model="share.form.kind" placeholder="请选择" filterable clearable>
-            <el-option
-              v-for="item in share.kinds"
-              :key="item.id"
-              :label="item.kindName"
-              :value="item.kindName"
-            ></el-option>
+            <el-option v-for="item in share.kinds" :key="item.id" :value="item.kindName"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="描述" class="input" prop="detail" clearable>
@@ -165,7 +160,7 @@ export default {
           url: [
             { required: true, message: "网址是必须的", trigger: "blur" },
             {
-              pattern: /((https?):\/\/)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$/,
+              pattern:/^(https?):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$/,
               message: "请输入正确的网址",
               trigger: ["change", "blur"]
             }
@@ -193,7 +188,7 @@ export default {
     },
     async thumb(index) {
       let id = this.tableData[index].id;
-      if (auth.getToken) {
+      if (auth.getToken()) {
         //点赞
         if (!this.tableData[index].isThumb) {
           let res = await freevideoApi.thumb(id);
@@ -211,12 +206,7 @@ export default {
           }
         }
       } else {
-        this.$router.push({
-          path: "/user/login",
-          query: {
-            back: $route.path
-          }
-        });
+        auth.toLogin(that.$router, that.$route);
       }
     },
     async refresh() {
@@ -236,8 +226,14 @@ export default {
             type: "warning"
           });
         }
-        this.tableData = res.data.items;
-        this.load = false;
+        else{
+          this.tableData = res.data.items;
+          this.load = false;
+          this.$message({
+            message: "刷新成功",
+            type: "success"
+          });
+       }
       }
     },
     formatter(row, column) {
@@ -264,7 +260,7 @@ export default {
     async shareOpen() {
       let res = await freevideoApi.getKind();
       if (res.code == 15000) {
-        this.share.kinds = res.data;
+        this.share.kinds = res.data.items;
         this.share.dialogVisible = true;
       }
     },
@@ -286,7 +282,9 @@ export default {
         });
       }
     },
-    feedback() {}
+    spit() {
+      // console.log("哈哈");
+    }
   }
 };
 </script>
@@ -294,6 +292,7 @@ export default {
 <style lang="scss" >
 @import "~/assets/css/common.scss";
 $base-size: 1vw;
+$width: $main-width*0.85;
 .tool-bar {
   margin: {
     top: 2vh;
@@ -349,8 +348,7 @@ $base-size: 1vw;
   justify-content: space-around;
 }
 .con-video {
-  width: $main-width;
-  // margin: 0 auto;
+  width: $width;
   margin-top: 2vh;
 }
 </style>

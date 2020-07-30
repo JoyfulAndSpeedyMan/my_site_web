@@ -3,7 +3,19 @@
     <div class="top">
       <div class="top-left">
         <el-avatar :src="user.avatar" :size="100"></el-avatar>
-        <span class="nickname">{{user.nickname}}</span>
+        <span class="nickname" @click="editNickname">
+          <el-input
+            @blur="editNicknameDone"
+            @keypress.enter.native="editNicknameDone"
+            ref="inputNickname"
+            v-if="editingNickname"
+            v-model="editingNicknameModel"
+            style="display: inline-block;width: 10em;"
+          ></el-input>
+
+          <span v-else>{{user.nickname}}</span>
+          <i class="el-icon-edit" style="font-size: 0.8em;color: #a5157f;"></i>
+        </span>
       </div>
       <div class="top-right">
         <el-button type="primary">保存</el-button>
@@ -20,18 +32,20 @@
 
     <el-divider></el-divider>
     <el-menu
-      :default-active="activeIndex"
+      :default-active="this.$route.path"
       class="el-menu-demo"
       mode="horizontal"
       background-color="#11111100"
       text-color="#303133"
       active-text-color="#409eff"
-      @select="handleSelect"
       router
     >
       <el-menu-item index="/user/detail">个人信息</el-menu-item>
       <el-menu-item index="/user/detail/privilege">拥有特权</el-menu-item>
-      <el-menu-item index="/user/detail/message">我的消息</el-menu-item>
+      <el-menu-item index="/user/detail/message">
+        我的消息
+        <span class="reddot" v-if="user.msgUnreadNum">•</span>
+      </el-menu-item>
     </el-menu>
     <nuxt />
     <el-divider></el-divider>
@@ -55,19 +69,33 @@ export default {
     }
 
     return {
-      user:result
+      user: result,
+      editingNicknameModel: result.nickname
     };
+  },
+  updated() {
+    if (this.editingNickname) this.$refs["inputNickname"].focus();
   },
   data() {
     return {
       user: {},
-      activeIndex: "/user/detail"
+      editingNickname: false,
+      editingNicknameModel: ""
+      // activeIndex: "/user/detail"
     };
   },
   methods: {
-    handleSelect(key, keyPath) {
-      console.log(key);
-      console.log(keyPath);
+    editNickname() {
+      this.editingNickname = true;
+    },
+    async editNicknameDone() {
+      this.editingNickname = false;
+      if (this.editingNicknameModel != this.user.nickname) {
+        let res = await userApi.changeNickname(this.editingNicknameModel);
+        if (res.code == 15000) {
+          this.$set(this.user, "nickname", this.editingNicknameModel);
+        }
+      }
     }
   }
 };
@@ -82,16 +110,10 @@ export default {
     display: inline-flex;
     align-items: center;
   }
-  //   .top-info {
-  //     margin-left: 20px;
-  //     display: flex;
-  //     flex-direction: column;
-  //     justify-content: center;
-  //     font-size: 1.3em;
-  //   }
   .nickname {
     margin-left: 20px;
     font-size: 1.4em;
+    cursor: pointer;
   }
   .top-right {
     font-size: 1.3em;
@@ -101,5 +123,12 @@ export default {
 // 分割线的颜色设置
 .el-divider {
   background: #b16666;
+}
+.reddot {
+  display: inline-block;
+
+  color: red;
+  font-size: 1.7em;
+  transform: translate(2px, -10px);
 }
 </style>

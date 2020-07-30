@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-timeline style="margin-top:20px;" >
+    <el-timeline style="margin-top:20px;">
       <el-timeline-item
         v-for="msg in messages"
         :key="msg.id"
@@ -10,7 +10,6 @@
       >
         <Card class="msg-card">
           <p class="t1">{{msg.title}}</p>
-          <p class="t2">{{msg.intro}}</p>
           <p class="cont">{{msg.content}}</p>
         </Card>
       </el-timeline-item>
@@ -101,7 +100,7 @@ export default {
         this.loading = false;
         if (res.data.size == 0) {
           this.noMore = true;
-          console.log('嘿嘿')
+          console.log("嘿嘿");
           return;
         }
         this.messages = this.messages.concat(res.data.items);
@@ -117,23 +116,20 @@ export default {
 <style lang="scss">
 .msg-card {
   background: rgba(234, 234, 234, 0.62);
+  min-height: 100px;
+  .t1 {
+    color: #132519;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin: 0px;
+  }
+  .cont {
+    margin: 10px 0px 0px 0px;
+    color: #292628;
+    font-size: 1.2em;
+  }
 }
 .el-timeline-item__timestamp {
   color: #2e333c;
-}
-.t1 {
-  color: #132519;
-  font-size: 1.9em;
-  font-weight: bold;
-
-
-}
-.t2 {
-  color: #822f2f;
-  font-size: 1.4em;
-}
-.cont {
-  color: #212121;
-  font-size: 1.2em;
 }
 </style>

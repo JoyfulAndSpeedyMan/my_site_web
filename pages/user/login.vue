@@ -17,7 +17,7 @@
         </el-form-item>
         <div class="buttons">
           <el-button type="primary" @click="register">注册</el-button>
-          <el-button type="primary" @click="loginClick('ruleForm')">登录</el-button>
+          <el-button type="primary" @click="loginClick('ruleForm')" :loading="loading">{{loading?"加载中":"登录"}}</el-button>
         </div>
       </el-form>
     </div>
@@ -34,6 +34,7 @@ export default {
         username: "",
         password: ""
       },
+      loading:false,
       rules: {
         username: [
           { required: true, message: "用户名不能为空", trigger: "blur" },
@@ -63,8 +64,9 @@ export default {
       });
     },
     async login() {
+      this.loading=true;
       let res = await userApi.login(this.user);
-      if (res.data.token) {
+      if (res.code==15000) {
         let user = auth.getUserInfoAndSaveToken(res.data.token);
         let backUrl=this.$route.query.back;
         console.log(backUrl);
@@ -81,6 +83,7 @@ export default {
           type: "success"
         });
       }
+      this.loading=false;
     }
   }
 };

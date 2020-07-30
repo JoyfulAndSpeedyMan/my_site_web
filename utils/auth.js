@@ -2,24 +2,24 @@ import cookies from 'js-cookie'
 import jwt from 'jwt-decode'
 
 const tokenKey = 'X-User-Token';
-const userInfoKey ='user-info'
+const userInfoKey = 'user-info'
 const defaultTokenExpire = 365;
 export default {
-    saveUserInfo(user){
+    saveUserInfo(user) {
         cookies.set(userInfoKey, user);
     },
     getUserInfo() {
         let user = cookies.getJSON(userInfoKey);
-        if(user==undefined)
+        if (user == undefined)
             return null;
         return user;
     },
     getUserInfoByToken(token) {
         let user;
-        try{
-            user=jwt(token)
+        try {
+            user = jwt(token)
         }
-        catch(e){
+        catch (e) {
             return null;
         }
         return user;
@@ -32,10 +32,19 @@ export default {
         cookies.set(tokenKey, token, { expires: defaultTokenExpire })
     },
     getToken() {
-        return cookies.get(tokenKey);
+        let token = cookies.get(tokenKey);
+        return token;
     },
-    logout(){
+    logout() {
         cookies.remove(tokenKey);
+    },
+    toLogin(router, route) {
+        router.push({
+            path: "/user/login",
+            query: {
+                back: route.path
+            }
+        });
     }
 
 }

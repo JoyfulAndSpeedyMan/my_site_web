@@ -11,7 +11,6 @@
             </div>
           </div>
           <hr />
-          <p class="t2">{{spit.title}}</p>
           <p class="cont">{{spit.content}}</p>
           <div class="spit-index-card-bottom">
             <div class="publish-date">发表时间: {{spit.createTime}}</div>
@@ -88,24 +87,71 @@
         <div style="height:10px" v-if="spit.listComment"></div>
       </Card>
     </div>
-    <div class="spit-index-right"></div>
+    <div class="spit-index-right">
+      <el-button
+        :type="buttonStyleList[1]"
+        icon="el-icon-refresh-right"
+        round
+        @click="refreshSpit"
+      >刷新</el-button>
+      <el-button :type="buttonStyleList[0]" icon="el-icon-edit" round @click="spit">吐槽一下</el-button>
+    </div>
     <el-drawer :visible.sync="commentDrawer" :direction="direction">
       <template #title>
-        <div>{{drawerTitle}}</div>
+        <div>{{commentDrawerTitle}}</div>
       </template>
       <template #default>
-        <div class="new-spit-comment-input-content">
+        <div class="drawer-content">
           <el-form :model="commentModel" :rules="commentRules" ref="commentForm">
             <el-form-item :label="`内容`" prop="content">
-              <el-input type="textarea" v-model="commentModel.content" :rows="4" ref="con"></el-input>
+              <el-input
+                type="textarea"
+                v-model="commentModel.content"
+                :rows="4"
+                maxlength="70"
+                show-word-limit
+              ></el-input>
             </el-form-item>
           </el-form>
-          <div class="new-spit-comment-input-footer">
+          <div class="drawer-content-input-footer">
             <el-button @click="commentDrawer=false">取 消</el-button>
             <el-button
               @click="pushComment('commentForm')"
               type="primary"
-            >{{ loading ? '提交中 ...' : '确 定' }}</el-button>
+            >{{ commentModel.loading ? '提交中 ...' : '确 定' }}</el-button>
+          </div>
+        </div>
+      </template>
+    </el-drawer>
+
+    <el-drawer :visible.sync="spitDrawer" :direction="direction">
+      <template #title>
+        <div>吐槽一下</div>
+      </template>
+      <template #default>
+        <div class="drawer-content">
+          <el-form :model="spitModel" :rules="spitRules" ref="spitForm">
+            <el-form-item :label="`内容`" prop="content">
+              <el-input
+                type="textarea"
+                v-model="spitModel.content"
+                :rows="4"
+                maxlength="100"
+                show-word-limit
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="标签">
+              <el-select v-model="spitModel.tag" filterable placeholder="请选择" multiple>
+                <el-option v-for="tag in spitModel.tags" :key="tag.id" :value="tag.tagName"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <div class="drawer-content-input-footer">
+            <el-button @click="spitDrawer=false">取 消</el-button>
+            <el-button
+              @click="pushSpit('spitForm')"
+              type="primary"
+            >{{ spitModel.submitLoading ? '提交中 ...' : '确 定' }}</el-button>
           </div>
         </div>
       </template>
@@ -151,8 +197,50 @@ export default {
       }
     });
   },
+  data() {
+    return {
+      spits: [],
+      //无限滚动变量
+      page: 2,
+      pageSize: 5,
+      load: false,
+      noMore: false,
+      loading: false,
+      spitDrawer: false,
+      spitModel: {
+        submitLoading: false,
+        tag: "",
+        tags: [],
+        content:""
+      },
+      spitRules: {
+        content: [
+          { required: true, message: "内容不能为空", trigger: "blur" },
+          { min: 1, max: 200, message: "内容太长了", trigger: "blur" }
+        ]
+      },
+      commentDrawer: false,
+      direction: "rtl",
+      commentModel: {
+        //要发表的评论所在吐槽的索引号
+        spitIndex: 0,
+        //要回复评论的索引号，根评论为undefined
+        commentIndex: undefined,
+        content: "",
+        loading: false
+      },
+      commentRules: {
+        content: [
+          { required: true, message: "评论内容不能为空", trigger: "blur" },
+          { min: 1, max: 70, message: "内容太长了", trigger: "blur" }
+        ]
+      },
+      buttonStyleList: ["primary ", "success ", "warning ", "danger ", "info "]
+    };
+  },
   methods: {
     async loadMore() {
+      this.loading = true;
       let res = await spitApi.getSpit(this.page, this.pageSize);
       if (res) {
         this.loading = false;
@@ -160,14 +248,66 @@ export default {
           this.noMore = true;
           return;
         }
-        let newSpit=res.data.items;
-         for (var i in newSpit) {
+        let newSpit = res.data.items;
+        for (var i in newSpit) {
           let spit = newSpit[i];
           spit.commentIcon = "el-icon-arrow-up";
           spit.comments = [];
         }
         this.spits = this.spits.concat(newSpit);
         this.page++;
+      }
+    },
+    async refreshSpit() {
+      this.noMore = false;
+      this.loading = true;
+      let res = await spitApi.getSpit(this.page, this.pageSize);
+      if (res) {
+        this.loading = false;
+        if (res.data.size == 0) {
+          this.noMore = true;
+          return;
+        }
+        let newSpit = res.data.items;
+        for (var i in newSpit) {
+          let spit = newSpit[i];
+          spit.commentIcon = "el-icon-arrow-up";
+          spit.comments = [];
+        }
+        this.spits = newSpit;
+        this.page = 2;
+        this.$message({
+          type: "success",
+          message: "刷新成功"
+        });
+      }
+    },
+    async spit() {
+      this.spitDrawer = true;
+      let res = await spitApi.getSpitTags();
+      if (res.code == 15000) {
+        let tags = res.data.items;
+        this.$set(this.spitModel, "tags", tags);
+      }
+    },
+    pushSpit(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.spitModel.submitLoading = true;
+          this.publishSpit(this.spitModel.content, this.spitModel.spit);
+        }
+      });
+    },
+    async publishSpit(content, tags) {
+      let res = await spitApi.publishSpit(content, tags);
+      this.spitModel.submitLoading= false;
+      if (res.code == 15000) {
+        let spit = res.data;
+        spit.commentIcon = "el-icon-arrow-up";
+        spit.comments = [];
+        this.spits.unshift(spit);
+        this.spitDrawer = false;
+        this.spitModel.content = "";
       }
     },
     async spitThumb(index) {
@@ -253,7 +393,6 @@ export default {
       this.$set(this.spits, index, spit);
     },
     comment(index, commentIndex) {
-      console.log(`index : ${index} , commentIndex : ${commentIndex}`);
       let si = this.commentModel.spitIndex;
       let ci = this.commentModel.commentIndex;
       try {
@@ -269,6 +408,7 @@ export default {
     pushComment(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
+          this.commentModel.loading = true;
           let spitIndex = this.commentModel.spitIndex;
           let commentIndex = this.commentModel.commentIndex;
           let content = this.commentModel.content;
@@ -285,6 +425,7 @@ export default {
         let comment = spit.comments[commentIndex];
         res = await spitApi.publishComment(spit.id, comment.id, content);
       }
+      this.commentModel.loading = false;
       if (res.code == 15000) {
         this.$message({
           type: "success",
@@ -308,37 +449,11 @@ export default {
       }
     }
   },
-  data() {
-    return {
-      spits: [],
-      //无限滚动变量
-      page: 2,
-      pageSize: 5,
-      load: false,
-      noMore: false,
-      loading: false,
-      commentDrawer: false,
-      direction: "rtl",
-      commentModel: {
-        //要发表的评论所在吐槽的索引号
-        spitIndex: 0,
-        //要回复评论的索引号，根评论为undefined
-        commentIndex: undefined,
-        content: ""
-      },
-      commentRules: {
-        content: [
-          { required: true, message: "评论内容不能为空", trigger: "blur" },
-          { min: 1, max: 40, message: "内容太长了", trigger: "blur" }
-        ]
-      }
-    };
-  },
   components: {
     Card
   },
   computed: {
-    drawerTitle: function() {
+    commentDrawerTitle: function() {
       let spitIndex = this.commentModel.spitIndex;
       let commentIndex = this.commentModel.commentIndex;
       if (commentIndex == undefined) {
@@ -375,6 +490,7 @@ $min-height: 50vh;
   width: 25%;
   min-height: $min-height;
   @include box;
+  padding: 20px;
 }
 .spit-index-card {
   padding: 10px 20px 0px 20px;
@@ -506,10 +622,10 @@ $min-height: 50vh;
   }
 }
 
-.new-spit-comment-input-content {
+.drawer-content {
   padding: 5px 20px;
 
-  .new-spit-comment-input-footer {
+  .drawer-content-input-footer {
     // position: absolute;
     // width: 90%;
     // bottom: 10px;

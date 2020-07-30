@@ -2,12 +2,12 @@ import request from '@/utils/request'
 import qs from 'qs'
 const base = "/user"
 export default {
-    register(user) {
+    register(phone,password,code) {
+        let data=qs.stringify({phone,password,code});
         return request({
             url: `${base}/register`,
             method: "post",
-            data:user,
-            headers:{"content-Type": "application/json"}
+            data
         })
     },
     sendRegisterCode(phone) {
@@ -27,13 +27,13 @@ export default {
     },
     getBaseInfo(){
         return request({
-            url: `${base}/baseInfo`,
+            url: `${base}/info/baseInfo`,
             method: "get",
         })
     },
     getInfo(){
         return request({
-            url: `${base}`,
+            url: `${base}/info`,
             method: "get",
         })
     },
@@ -42,5 +42,38 @@ export default {
             url: `${base}/message/${page}/${size}`,
             method: "get",
         })
+    },
+    changePassword(password,code){
+        let data=qs.stringify({password,code});
+        return request({
+            url: `${base}/password/change`,
+            method: "post",
+            data,
+        })
+    },
+    sendChangePasswordCode(phone){
+        let data=qs.stringify({phone});
+        return request({
+            url: `${base}/password/change/code`,
+            method: "post",
+            data,
+        })
+    },
+    changeUsername(username){
+        let data=qs.stringify({username});
+        return request({
+            url: `${base}/info/username`,
+            method: "put",
+            data,
+        })
+    },
+    changeNickname(nickname){
+        let data=qs.stringify({nickname});
+        return request({
+            url: `${base}/info/nickname`,
+            method: "put",
+            data,
+        })
     }
+    
 }

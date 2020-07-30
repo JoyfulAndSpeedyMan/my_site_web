@@ -19,8 +19,8 @@ export default {
     unthumb(id) {
         let data=qs.stringify({id:id});
         return request({
-            url: `${base}/unthumb`,
-            method: "put",
+            url: `${base}/thumb`,
+            method: "delete",
             data
         })
     },
@@ -31,11 +31,11 @@ export default {
         })
     },
     shareCommit(share){
+        let data=qs.stringify(share);
         return request({
             url: `${base}/share`,
             method: "put",
-            data:share,
-            headers:{"content-Type": "application/json"}
+            data
         })
     }
 

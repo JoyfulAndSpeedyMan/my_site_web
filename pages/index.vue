@@ -6,7 +6,6 @@
 
 <script>
 import IndexCard from "~/components/IndexCard";
-
 import categoryApi from "~/api/category";
 export default {
   async asyncData() {
@@ -22,10 +21,12 @@ export default {
       count: 0
     };
   },
+  computed:{
+  },
   methods: {
     load () {
         this.count += 2
-    }
+    },
   },
   components: {
     IndexCard

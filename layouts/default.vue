@@ -28,9 +28,6 @@ body{
   padding: 0 0;
 }
 .main{
-    // width: $main-width;
-    // height: 80vh;
-    // margin: 0 auto;
     display: flex;
     justify-content: center;
 }
